@@ -7,8 +7,8 @@ open Browser.Types
 open Fable.Remoting.Client
 
 type ProcessedImage = {
-    OriginalImageFileName: string 
-    OriginalImage : byte[] 
+    OriginalImageFileName: string
+    OriginalImage : byte[]
     ProcessedImage : byte[]
 }
 
@@ -27,9 +27,7 @@ let init() = { ProcessedImages = HasNotStartedYet } , Cmd.none
 
 let update (msg: Msg) (state: State) =
     match msg with
-    | ProcessImage imageFile ->
-
-
+    | ProcessImage (imageFile: File) ->
         let processImage = async {
             try
                 let! imageBytes = imageFile.ReadAsByteArray()
@@ -47,23 +45,23 @@ let update (msg: Msg) (state: State) =
 
         { state with ProcessedImages = InProgress }, Cmd.fromAsync processImage
 
-    | ImageProcessedSuccessfully images ->  
+    | ImageProcessedSuccessfully images ->
         { state with ProcessedImages = Resolved images }, Cmd.none
 
-    | Reset -> 
+    | Reset ->
         { state with ProcessedImages = HasNotStartedYet }, Cmd.none
 
-    | Download -> 
-        match state.ProcessedImages with 
-        | Resolved images -> 
+    | Download ->
+        match state.ProcessedImages with
+        | Resolved images ->
             let fileName = images.OriginalImageFileName
             images.ProcessedImage.SaveFileAs(fileName)
-            state, Cmd.none 
+            state, Cmd.none
 
-        | _ -> 
-            state, Cmd.none 
+        | _ ->
+            state, Cmd.none
 
-    | DoNothing -> 
+    | DoNothing ->
         state, Cmd.none
 
 let fableLogo() = StaticFile.import "./imgs/fable_logo.png"
@@ -74,22 +72,22 @@ let render (state: State) (dispatch: Msg -> unit) =
         prop.style [
             style.textAlign.center
             style.padding 40
-        ] 
+        ]
 
         prop.children [
 
-            match state.ProcessedImages with 
-            | HasNotStartedYet -> 
+            match state.ProcessedImages with
+            | HasNotStartedYet ->
                 Html.input [
                     prop.type'.file
                     prop.onChange (ProcessImage >> dispatch)
                 ]
 
-            | InProgress -> 
+            | InProgress ->
                 Html.h1 "Loading"
 
-            | Resolved images -> 
-                
+            | Resolved images ->
+
                 Html.div [
                     Html.button [
                         prop.text "Reset"
@@ -108,7 +106,7 @@ let render (state: State) (dispatch: Msg -> unit) =
                         prop.style [ style.margin 10 ]
                         prop.src (images.OriginalImage.AsDataUrl())
                     ]
-                     
+
                     Html.img [
                         prop.style [ style.margin 10 ]
                         prop.src (images.ProcessedImage.AsDataUrl())
