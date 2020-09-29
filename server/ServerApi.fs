@@ -16,19 +16,19 @@ type ServerApi(logger: ILogger<ServerApi>, config: IConfiguration) =
             return { value = 10 }
         }
 
-    member this.Grayscale(imageBytes: byte[]) : Async<byte[]> = 
+    member this.Grayscale(imageBytes: byte[]) : Async<byte[]> =
         use imageStream = new MemoryStream(imageBytes)
         use bitmap = SKBitmap.Decode(imageStream)
 
-        for x in 0 .. bitmap.Width - 1 do 
+        for x in 0 .. bitmap.Width - 1 do
             for y in  0 .. bitmap.Height - 1 do
                 let currentPixel = bitmap.GetPixel(x, y)
-                let average = (currentPixel.Red + currentPixel.Green + currentPixel.Blue) / (byte 3)
-                let grayscale = SKColor.Empty.WithRed(average).WithGreen(average).WithBlue(average)
+                let average = (int currentPixel.Red + int currentPixel.Green + int currentPixel.Blue) / 3
+                let grayscale = SKColor.Empty.WithRed(byte average).WithGreen(byte average).WithBlue(byte average)
                 bitmap.SetPixel(x, y, grayscale.WithAlpha(currentPixel.Alpha))
 
         let outputImage = bitmap.Encode(SKEncodedImageFormat.Jpeg, 100).ToArray()
-        
+
         async { return outputImage }
 
     member this.Build() : IServerApi =
